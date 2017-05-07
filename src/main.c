@@ -365,7 +365,7 @@ static void usage()
 {
     printf("\n");
     printf("USAGE:\n");
-    printf("    mangler [type (udp/tcp/ip4)] [plugin] [plugin_arguments]\n");
+    printf("    mangler [protocol (udp/tcp/ip4)] [plugin] [plugin_arguments]\n");
     printf("\n");
 
     list_plugins();
@@ -412,7 +412,7 @@ int main(int argc, char* argv[])
     }
 
     if (!(plug->type & plug_type)) {
-        PRINT_ERR("Type unsupported by plugin\n");
+        PRINT_ERR("Protocol unsupported by plugin\n");
         ret = 1;
         goto out;
     }
