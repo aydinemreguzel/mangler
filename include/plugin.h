@@ -2,9 +2,10 @@
 #define __PLUGIN_H__
 
 typedef enum {
-    PLUGIN_UDP,
-    PLUGIN_TCP,
-    PLUGIN_IPV4
+    PLUGIN_UNKNOWN = 0x0,
+    PLUGIN_UDP = 0x1,
+    PLUGIN_TCP = 0x2,
+    PLUGIN_IPV4 = 0x4
 } plug_type_e;
 
 struct plugin_s;
@@ -16,7 +17,7 @@ typedef void (*plug_cb_t)(plugin_t* self, char* buf, uint16_t* buf_len);
 
 struct plugin_s {
     const char* name;
-    plug_type_e type;
+    int type;
     void* priv;
     plug_init_t init;
     plug_destroy_t destroy;

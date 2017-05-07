@@ -95,6 +95,7 @@ static void callback(plugin_t* self, char* buf, uint16_t* buf_len)
 plugin_t appendstr_plugin = {
     .name = "appendstr",
     .priv = NULL,
+    .type = PLUGIN_UDP | PLUGIN_IPV4,
     .init = init,
     .destroy = destroy,
     .callback = callback

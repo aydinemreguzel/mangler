@@ -85,6 +85,7 @@ static void callback(plugin_t* self, char* buf, uint16_t* buf_len)
 plugin_t replace_plugin = {
     .name = "replace",
     .priv = NULL,
+    .type = PLUGIN_UDP | PLUGIN_TCP | PLUGIN_IPV4,
     .init = init,
     .destroy = destroy,
     .callback = callback

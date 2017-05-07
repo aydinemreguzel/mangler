@@ -26,7 +26,6 @@
 typedef struct {
     struct iphdr ip;
     struct tcphdr tcp;
-    char dat[];
 } __attribute__((packed)) ip4_tcp_t;
 
 typedef struct {
@@ -57,6 +56,23 @@ static plugin_t* get_plugin(const char* name)
     }
 
     return NULL;
+}
+
+static void list_plugins()
+{
+    int idx = 0;
+
+    printf("Available plugins:\n");
+
+    while (mangle_plugins[idx] != NULL) {
+        plugin_t* cur = mangle_plugins[idx];
+        printf("%20s\t->\tudp: %d tcp: %d ip4:%d \n", cur->name,
+            !!(cur->type & PLUGIN_UDP),
+            !!(cur->type & PLUGIN_TCP),
+            !!(cur->type & PLUGIN_IPV4)
+            );
+        idx++;
+    }
 }
 
 /*******************************************/
@@ -164,6 +180,7 @@ static int tcp_callback(struct nfq_q_handle* qh, struct nfgenmsg* nfmsg,
     struct nfqnl_msg_packet_hdr* ph;
     ip4_tcp_t* ip;
     plugin_t* plugin = (plugin_t*)data;
+    char* payload;
 
     if (!plugin) {
         ret = -1;
@@ -185,10 +202,16 @@ static int tcp_callback(struct nfq_q_handle* qh, struct nfgenmsg* nfmsg,
     PRINT("dest addr: " IP_FMT "\n", IPADDR(ip->ip.daddr));
     PRINT("dest port: %d\n", ntohs(ip->tcp.dest));
 
-    plugin->callback(plugin, ip->dat, &dat_len);
+    payload = buffer + sizeof(struct iphdr) + (ip->tcp.doff * 4);
+    dat_len = ntohs(ip->ip.tot_len) - (sizeof(struct iphdr) + (ip->tcp.doff * 4));
+
+    /* only call callback if there's data */
+    if (dat_len > 0) {
+        plugin->callback(plugin, payload, &dat_len);
+    }
 
     /* update len */
-    ip->ip.tot_len = htons(dat_len + sizeof(struct udphdr) + sizeof(struct iphdr));
+    ip->ip.tot_len = htons(sizeof(struct iphdr) + (ip->tcp.doff * 4) + dat_len);
 
     /* update checksums */
     nfq_ip_set_checksum(&ip->ip);
@@ -259,7 +282,7 @@ out:
     return ret;
 }
 
-static int init_queue(plugin_t* plugin)
+static int init_queue(plugin_t* plugin, plug_type_e plug_type)
 {
     int ret = 0;
     int rc;
@@ -287,7 +310,7 @@ static int init_queue(plugin_t* plugin)
         goto out;
     }
 
-    switch (plugin->type) {
+    switch (plug_type) {
         case PLUGIN_UDP:
             nf_cb = udp_callback;
             break;
@@ -338,32 +361,70 @@ out:
     return ret;
 }
 
+static void usage()
+{
+    printf("\n");
+    printf("USAGE:\n");
+    printf("    mangler [type (udp/tcp/ip4)] [plugin] [plugin_arguments]\n");
+    printf("\n");
+
+    list_plugins();
+}
+
+static plug_type_e get_type(const char* str)
+{
+    if (!strcmp(str, "udp")) {
+        return PLUGIN_UDP;
+    } else if (!strcmp(str, "tcp")) {
+        return PLUGIN_TCP;
+    } else if (!strcmp(str, "ipv4")) {
+        return PLUGIN_IPV4;
+    } else {
+        return PLUGIN_UNKNOWN;
+    }
+}
+
 int main(int argc, char* argv[])
 {
     int ret = 0;
+    plug_type_e plug_type = PLUGIN_UNKNOWN;
     plugin_t* plug = NULL;
 
-    if (argc < 2) {
-        PRINT_ERR("No argument given\n");
+    if (argc < 3) {
+        PRINT_ERR("Not enough arguments\n");
+        ret = 1;
+        usage();
+        goto out;
+    }
+
+    plug_type = get_type(argv[1]);
+    if (plug_type == PLUGIN_UNKNOWN) {
+        PRINT_ERR("No such type\n");
         ret = 1;
         goto out;
     }
 
-    plug = get_plugin(argv[1]);
+    plug = get_plugin(argv[2]);
     if (!plug) {
         PRINT_ERR("No such plugin\n");
         ret = 1;
         goto out;
     }
 
-    ret = plug->init(plug, argc - 1, &argv[1]);
+    if (!(plug->type & plug_type)) {
+        PRINT_ERR("Type unsupported by plugin\n");
+        ret = 1;
+        goto out;
+    }
+
+    ret = plug->init(plug, argc - 2, &argv[2]);
     if (ret != 0) {
         PRINT_ERR("can't init plugin\n");
         ret = 1;
         goto out;
     }
 
-    ret = init_queue(plug);
+    ret = init_queue(plug, plug_type);
     if (ret != 0) {
         PRINT_ERR("exited with error\n");
         ret = 1;

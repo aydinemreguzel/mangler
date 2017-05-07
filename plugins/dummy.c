@@ -74,6 +74,7 @@ static void callback(plugin_t* self, char* buf, uint16_t* buf_len)
 
 plugin_t dummy_plugin = {
     .name = "dummy",
+    .type = PLUGIN_UDP | PLUGIN_TCP | PLUGIN_IPV4,
     .priv = NULL,
     .init = init,
     .destroy = destroy,
