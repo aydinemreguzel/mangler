@@ -5,6 +5,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <getopt.h>
 
 #include "include/common.h"
 #include "include/plugin.h"
@@ -70,7 +71,7 @@ static void destroy(plugin_t* self)
     free(priv);
 }
 
-static void callback(plugin_t* self, char* buf, uint16_t* buf_len)
+static void callback(plugin_t* self, unsigned char* buf, uint16_t* buf_len)
 {
     int i;
     replace_t* priv = (replace_t*)self->priv;

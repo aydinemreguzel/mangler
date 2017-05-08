@@ -5,6 +5,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <getopt.h>
 #include <math.h>
 
 #include <syscall.h>
@@ -17,7 +18,7 @@ typedef struct {
     float flip_chance;
 } flipbits_t;
 
-static void __getrandom(char* buf, size_t buf_len)
+static void __getrandom(unsigned char* buf, size_t buf_len)
 {
     syscall(SYS_getrandom, buf, buf_len, 0);
 }
@@ -27,8 +28,8 @@ static bool chance(float f)
     uint16_t rnd;
     float rnd_f;
 
-    __getrandom((char*) &rnd, sizeof(rnd));
-    rnd_f = ((float) rnd) / ((float) 0xffff);
+    __getrandom((unsigned char*)&rnd, sizeof(rnd));
+    rnd_f = ((float)rnd) / ((float)0xffff);
 
     return (f >= rnd_f);
 }
@@ -92,7 +93,7 @@ static void destroy(plugin_t* self)
     free(priv);
 }
 
-static void callback(plugin_t* self, char* buf, uint16_t* buf_len)
+static void callback(plugin_t* self, unsigned char* buf, uint16_t* buf_len)
 {
     int i;
     int bitcnt = *buf_len * 8;

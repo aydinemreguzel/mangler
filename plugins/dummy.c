@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <getopt.h>
 #include <unistd.h>
 
 #include "include/common.h"
@@ -66,7 +67,7 @@ static void destroy(plugin_t* self)
     free(priv);
 }
 
-static void callback(plugin_t* self, char* buf, uint16_t* buf_len)
+static void callback(plugin_t* self, unsigned char* buf, uint16_t* buf_len)
 {
     dummy_t* priv = (dummy_t*)self->priv;
     (void)priv;

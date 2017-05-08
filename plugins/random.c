@@ -9,7 +9,7 @@
 #include "include/common.h"
 #include "include/plugin.h"
 
-static void __getrandom(char* buf, size_t buf_len)
+static void __getrandom(unsigned char* buf, size_t buf_len)
 {
     syscall(SYS_getrandom, buf, buf_len, 0);
 }
@@ -23,7 +23,7 @@ static void destroy(plugin_t* self)
 {
 }
 
-static void callback(plugin_t* self, char* buf, uint16_t* buf_len)
+static void callback(plugin_t* self, unsigned char* buf, uint16_t* buf_len)
 {
     __getrandom(buf, *buf_len);
 }

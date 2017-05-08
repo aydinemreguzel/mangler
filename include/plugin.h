@@ -13,7 +13,7 @@ typedef struct plugin_s plugin_t;
 
 typedef int (*plug_init_t)(plugin_t* self, int argc, char* argv[]);
 typedef void (*plug_destroy_t)(plugin_t* self);
-typedef void (*plug_cb_t)(plugin_t* self, char* buf, uint16_t* buf_len);
+typedef void (*plug_cb_t)(plugin_t* self, unsigned char* buf, uint16_t* buf_len);
 
 struct plugin_s {
     const char* name;

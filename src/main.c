@@ -31,12 +31,12 @@ typedef struct {
 typedef struct {
     struct iphdr ip;
     struct udphdr udp;
-    char dat[];
+    unsigned char dat[];
 } __attribute__((packed)) ip4_udp_t;
 
 typedef struct {
     struct iphdr ip;
-    char dat[];
+    unsigned char dat[];
 } __attribute__((packed)) ipv4_t;
 
 /* sudo iptables -t mangle -I PREROUTING -i eth1 -s 192.168.1.200 -p udp -j NFQUEUE --queue-num=0 */
@@ -69,8 +69,7 @@ static void list_plugins()
         printf("%20s\t->\tudp: %d tcp: %d ip4:%d \n", cur->name,
             !!(cur->type & PLUGIN_UDP),
             !!(cur->type & PLUGIN_TCP),
-            !!(cur->type & PLUGIN_IPV4)
-            );
+            !!(cur->type & PLUGIN_IPV4));
         idx++;
     }
 }
@@ -180,7 +179,7 @@ static int tcp_callback(struct nfq_q_handle* qh, struct nfgenmsg* nfmsg,
     struct nfqnl_msg_packet_hdr* ph;
     ip4_tcp_t* ip;
     plugin_t* plugin = (plugin_t*)data;
-    char* payload;
+    unsigned char* payload;
 
     if (!plugin) {
         ret = -1;
