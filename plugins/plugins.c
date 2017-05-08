@@ -9,6 +9,7 @@ extern plugin_t appendstr_plugin;
 extern plugin_t random_plugin;
 extern plugin_t replace_plugin;
 extern plugin_t flipbits_plugin;
+extern plugin_t keyvalflip_plugin;
 
 plugin_t* mangle_plugins[] = {
     &dummy_plugin,
@@ -16,5 +17,6 @@ plugin_t* mangle_plugins[] = {
     &random_plugin,
     &replace_plugin,
     &flipbits_plugin,
+    &keyvalflip_plugin,
     NULL,
 };
